@@ -1,102 +1,126 @@
-import { Persona } from '@/utils/persona';
+import { FrontendScenario } from '@/data/local-seed-scenarios';
 import {
     MapPin,
-    Calendar,
-    User,
-    Wallet,
     Users,
-    Activity,
-    Check
+    Wallet,
+    Sparkles,
+    ShieldCheck,
+    TrendingDown,
+    Cake
 } from 'lucide-react';
 import clsx from 'clsx';
 
 interface HeroTextProps {
-    persona: Persona;
+    persona: FrontendScenario;
 }
 
 export default function HeroText({ persona }: HeroTextProps) {
     const currentYear = new Date().getFullYear() + 1;
+    const isSubsidyEligible = persona.aptcEligible;
+    const isCsrEligible = persona.csrEligible;
 
-    const getKeywords = (category: string) => {
-        switch (category) {
-            case 'Young Invincible': return ['Cheapest Options', 'Catastrophic Protection'];
-            case 'Low Income Family': return ['Max Subsidies', 'Low Deductible'];
-            case 'Chronic Care': return ['Specialist Access', 'Rx Coverage'];
-            case 'High Earner': return ['Tax Advantages', 'HSA Strategy'];
-            default: return ['ACA Compliant', 'Marketplace Plans'];
-        }
+    // Logic: Find primary subscriber age
+    const subscriber = persona.members.find(m => m.relationshipToSubscriber === 'SELF');
+    const primaryAge = subscriber ? subscriber.age : 30;
+
+    // LOGIC: Convert specific age to standard insurance bracket
+    const getAgeBracket = (age: number) => {
+        const lower = Math.floor(age / 5) * 5;
+        const upper = lower + 4;
+        return `${lower}-${upper}`;
     };
-    const tags = getKeywords(persona.meta.category);
+
+    // LOGIC: Convert count to readable label
+    const getHouseholdLabel = (count: number) => {
+        return count === 1 ? 'Individual' : `Family of ${count}`;
+    };
 
     return (
-        <div className="max-w-4xl mx-auto mb-12 animate-in fade-in slide-in-from-bottom-2 duration-1000">
+        <div className="max-w-4xl mx-auto mb-10 animate-in fade-in slide-in-from-bottom-2 duration-1000">
 
-            {/* 1. TOP LABEL: The "System Status" Look */}
-            <div className="flex items-center gap-2 mb-6">
-                <div className="h-px bg-slate-200 flex-1" />
-                <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-400">
-                    Analysis for {currentYear}
-                </span>
-                <div className="h-px bg-slate-200 flex-1" />
-            </div>
+            {/* 1. EDITORIAL HEADER */}
+            <div className="text-center mb-8 space-y-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 shadow-sm">
+                    <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-blue-600">
+                        {currentYear} Strategy: {persona.meta.category}
+                    </span>
+                </div>
 
-            {/* 2. MAIN HEADER */}
-            <div className="text-center mb-8">
-                <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-3">
+                <h1 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight leading-tight">
                     {persona.meta.title}
                 </h1>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-50 border border-slate-200">
-                    <Activity className="w-3.5 h-3.5 text-emerald-500" />
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                        {persona.meta.category} Strategy
-                    </span>
-                </div>
-            </div>
 
-            {/* 3. CLEAN STATS ROW (Divider Style) */}
-            <div className="flex flex-wrap justify-center items-center gap-4 md:gap-8 text-sm text-slate-500 font-medium mb-8">
-                <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-slate-400" />
-                    <span>Age {persona.demographics.age}</span>
-                </div>
-                <div className="hidden md:block w-px h-4 bg-slate-200" />
-                <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-slate-400" />
-                    <span>{persona.demographics.zip_code}</span>
-                </div>
-                <div className="hidden md:block w-px h-4 bg-slate-200" />
-                <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-slate-400" />
-                    <span>{persona.demographics.household_size} Member{persona.demographics.household_size > 1 ? 's' : ''}</span>
-                </div>
-                <div className="hidden md:block w-px h-4 bg-slate-200" />
-                <div className="flex items-center gap-2">
-                    <Wallet className="w-4 h-4 text-slate-400" />
-                    <span>${persona.demographics.household_income.toLocaleString('en-US')} / yr</span>
-                </div>
-            </div>
-
-            {/* 4. THE MISSION STATEMENT (Minimalist) */}
-            <div className="max-w-2xl mx-auto text-center">
-                <p className="text-xl md:text-2xl font-medium text-slate-700 leading-relaxed">
-                    &ldquo;{persona.meta.marketing_hook}&rdquo;
+                <p className="text-xl text-slate-500 font-medium max-w-2xl mx-auto leading-relaxed">
+                    {persona.meta.marketing_hook}
                 </p>
+            </div>
 
-                {/* 5. TAGS (Ghost Style) */}
-                <div className="flex flex-wrap justify-center gap-3 mt-6">
-                    {tags.map((tag, i) => (
-                        <span key={i} className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 py-1.5 rounded-lg border border-slate-100 bg-slate-50/50">
-                            <Check className="w-3 h-3 text-emerald-500" />
-                            {tag}
+            {/* 2. THE "GLASS RIBBON": Unified Data Context */}
+            <div className="flex justify-center">
+                <div className="bg-white/80 backdrop-blur-md border border-slate-200 shadow-lg shadow-slate-200/40 rounded-2xl p-1.5 inline-flex flex-wrap md:flex-nowrap items-center gap-1.5">
+
+                    {/* Segment A: Location & Age Bracket */}
+                    <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 rounded-xl border border-slate-100 h-10">
+                        <div className="flex items-center gap-1.5">
+                            <span className="text-slate-400"><MapPin size={14} /></span>
+                            <span className="text-xs font-bold text-slate-700">{persona.zipCode}</span>
+                        </div>
+                        <div className="w-px h-3 bg-slate-200" />
+                        <div className="flex items-center gap-1.5 h-10 w-22">
+                            <span className="text-slate-400"><Cake size={14} /></span>
+                            <span className="text-xs font-bold text-slate-700"> Age {getAgeBracket(primaryAge)}</span>
+                        </div>
+                    </div>
+
+                    {/* Segment B: Household (Updated Style) */}
+                    <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl border border-slate-100 h-10">
+                        <Users size={14} className="text-slate-400" />
+                        <span className="text-xs font-bold text-slate-700">
+                            {getHouseholdLabel(persona.members.length)}
                         </span>
-                    ))}
-                    <span className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 py-1.5 rounded-lg border border-slate-100 bg-slate-50/50">
-                        <Calendar className="w-3 h-3 text-slate-400" />
-                        ACA Compliant
-                    </span>
+                    </div>
+
+                    {/* Segment C: Financial Context */}
+                    <div className={clsx(
+                        "flex items-center gap-2 px-4 py-2 rounded-xl border transition-colors h-10",
+                        isSubsidyEligible
+                            ? "bg-emerald-50 border-emerald-100 text-emerald-800"
+                            : "bg-slate-50 border-slate-100 text-slate-700"
+                    )}>
+                        {isSubsidyEligible ? (
+                            <TrendingDown size={14} className="text-emerald-600" />
+                        ) : (
+                            <Wallet size={14} className="text-slate-400" />
+                        )}
+
+                        <span className="text-xs font-bold">
+                            ${persona.incomeMagi.toLocaleString()}/yr
+                        </span>
+
+                        {isSubsidyEligible && (
+                            <span className="hidden md:inline-flex items-center gap-1 ml-1 pl-2 border-l border-emerald-200 text-[10px] font-black uppercase tracking-wider text-emerald-600">
+                                <Sparkles size={10} /> Subsidy Eligible
+                            </span>
+                        )}
+                    </div>
                 </div>
             </div>
 
+            {/* 3. FOCUS TAGS */}
+            <div className="mt-8 flex justify-center gap-6 opacity-60 hover:opacity-100 transition-opacity">
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    <ShieldCheck size={12} /> ACA Compliant
+                </div>
+                {isCsrEligible && (
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        <TrendingDown size={12} /> CSR Savings Active
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

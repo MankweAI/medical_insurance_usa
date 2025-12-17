@@ -2,7 +2,6 @@
 // FILE: app/personas/[slug]/page.tsx
 // --------------------------------------------------------
 
-// 1. FORCE DYNAMIC RENDER (Crucial for US Logic)
 export const dynamic = 'force-dynamic';
 
 import { Metadata } from 'next';
@@ -11,73 +10,83 @@ import HeroText from '@/components/HeroText';
 import AppHeader from '@/components/AppHeader';
 import SinglePlanHero from '@/components/SinglePlanHero';
 import StrategyFooter from '@/components/StrategyFooter';
-import ControlPanel from '@/components/ControlPanel'; // <--- FIX 1: Added ControlPanel
-import PeopleAlsoAsk from '@/components/PeopleAlsoAsk'; // <--- FIX 2: Added PAA
+import ControlPanel from '@/components/ControlPanel';
+import PeopleAlsoAsk from '@/components/PeopleAlsoAsk';
 import BenefitsCard from '@/components/BenefitsCard';
 
 // DATA & LOGIC
-import { SEED_PERSONAS, SEED_PLANS } from '@/data/seed_data';
-import { PricingEngine } from '@/utils/engine';
-import { ContentGenerator } from '@/utils/seo-content'; // <--- Needed for FAQs
+import { coreTestScenarios } from '@/data/local-seed-scenarios';
+import { seedProducts } from '@/data/seed_data';
+import { ActuarialEngine, SimulatedClaim } from '@/utils/engine';
+import { resolvePlanVariant } from '@/utils/types';
+import { ContentGenerator } from '@/utils/seo-content'; // Might need update or be broken, check later
 
 type Props = {
     params: Promise<{ slug: string }>;
 };
 
-// 1. GENERATE STATIC PARAMS (Fixes 404s)
 export async function generateStaticParams() {
-    return SEED_PERSONAS.map((persona) => ({
-        slug: persona.slug,
+    return coreTestScenarios.map((s) => ({
+        slug: s.slug,
     }));
 }
 
-// 2. DYNAMIC METADATA
 export async function generateMetadata(props: Props): Promise<Metadata> {
     const params = await props.params;
-    const persona = SEED_PERSONAS.find(p => p.slug === params.slug);
+    const scenario = coreTestScenarios.find(s => s.slug === params.slug);
 
-    if (!persona) return { title: 'Not Found | HealthOS America' };
+    if (!scenario) return { title: 'Not Found | HealthOS America' };
 
     return {
-        title: `${persona.meta.title} | 2026 Strategy`,
-        description: persona.meta.marketing_hook,
+        title: `${scenario.meta.title} | 2026 Strategy`,
+        description: scenario.meta.marketing_hook,
     };
 }
 
-// 3. PAGE COMPONENT
 export default async function PersonaPage(props: Props) {
     const params = await props.params;
     const { slug } = params;
 
-    // A. FETCH PERSONA
-    const persona = SEED_PERSONAS.find(p => p.slug === slug);
-    if (!persona) notFound();
+    // A. FETCH SCENARIO (Household)
+    const household = coreTestScenarios.find(s => s.slug === slug);
+    if (!household) notFound();
 
-    // B. FETCH RECOMMENDED PLAN
-    const plan = SEED_PLANS.find(p => p.id === persona.recommended_plan_id);
-    if (!plan) return <div>Configuration Error: Recommended Plan Not Found</div>;
+    // B. RESOLVE PLAN (Simulate marketplace logic)
+    // For this demo, we assume the user is looking at the "Acme Blue Silver" product
+    // and the engine automatically directs them to the correct Variant (e.g. CSR 87).
+    const product = seedProducts[0]; // Acme Blue Silver
+    const variant = resolvePlanVariant(product, household);
 
-    // C. GENERATE DYNAMIC CONTENT (FAQs)
-    const faqs = ContentGenerator.generateFAQ(plan, persona);
+    if (!variant) return <div>Configuration Error: No Valid Plan Variant Found for this Household.</div>;
 
-    // D. CALCULATE MARKET LADDER (Smart Pivot)
-    const ladder = SEED_PLANS.map(p => {
-        const financials = PricingEngine.runProfile(p, persona);
-        return {
-            plan: p,
-            metrics: financials
-        };
-    }).sort((a, b) => a.metrics.totalEstimatedCost - b.metrics.totalEstimatedCost);
+    // C. RUN ACTUARIAL SIMULATION
+    // Simulate a year of "Average" claims to show estimated cost
+    // For this seed, we'll create a dummy claim set or just use the household's usage if we added it.
+    // Since we don't have usage profiles in `coreTestScenarios` yet, let's simulate a standard set:
+    // 2 PCP, 1 Specialist, 2 Generic Rx per person.
 
-    // E. FIND PIVOTS
-    const currentIndex = ladder.findIndex(item => item.plan.id === plan.id);
-    const cheaperOption = currentIndex > 0 ? ladder[currentIndex - 1] : null;
-    const richerOption = currentIndex < ladder.length - 1 ? ladder[currentIndex + 1] : null;
+    const dummyClaims: SimulatedClaim[] = household.members.flatMap(m => [
+        { memberId: m.id, totalBilled: 150, allowedAmount: 100, serviceType: 'PRIMARY_CARE', networkTier: 'TIER_1_PREFERRED' },
+        { memberId: m.id, totalBilled: 150, allowedAmount: 100, serviceType: 'PRIMARY_CARE', networkTier: 'TIER_1_PREFERRED' },
+        { memberId: m.id, totalBilled: 300, allowedAmount: 200, serviceType: 'SPECIALIST', networkTier: 'TIER_1_PREFERRED' },
+        { memberId: m.id, totalBilled: 50, allowedAmount: 20, serviceType: 'GENERIC_DRUG', networkTier: 'TIER_1_PREFERRED' },
+        { memberId: m.id, totalBilled: 50, allowedAmount: 20, serviceType: 'GENERIC_DRUG', networkTier: 'TIER_1_PREFERRED' },
+    ]);
 
-    const pivots = {
-        cheaper: cheaperOption ? { plan: cheaperOption.plan, persona } : null,
-        richer: richerOption ? { plan: richerOption.plan, persona } : null
-    };
+    // If there is a high risk member (Cancer/Diabetes), add a massive claim
+    // Simple hack for the "Catastrophic" test scenario
+    household.members.forEach(m => {
+        if (m.conditions.length > 0) {
+            dummyClaims.push({ memberId: m.id, totalBilled: 50000, allowedAmount: 25000, serviceType: 'ER' as const, networkTier: 'TIER_1_PREFERRED' as const });
+        }
+    });
+
+    const simulation = ActuarialEngine.simulateAnnualCost(product, variant, household, dummyClaims);
+    const subsidyMonthly = ActuarialEngine.calculateMonthlySubsidy(household);
+
+    // D. GENERATE DYNAMIC CONTENT (FAQs) - Placeholder until ContentGen is refactored
+    // const faqs = ContentGenerator.generateFAQ(variant, household); 
+    const faqs: any[] = [];
 
     return (
         <main className="min-h-screen bg-slate-50/50 pb-32 relative overflow-hidden animate-page-enter">
@@ -85,9 +94,9 @@ export default async function PersonaPage(props: Props) {
 
             <section className="relative z-10 pt-16 px-4 sm:px-6 pb-8">
                 {/* HERO TEXT */}
-                <HeroText persona={persona} />
+                <HeroText persona={household} />
 
-                {/* --- FIX 1: CONTROL PANEL INJECTED HERE --- */}
+                {/* CONTROL PANEL */}
                 <ControlPanel />
             </section>
 
@@ -96,32 +105,34 @@ export default async function PersonaPage(props: Props) {
 
                 {/* 1. HERO CARD */}
                 <SinglePlanHero
-                    persona={persona}
-                    plan={plan}
-                    financials={PricingEngine.runProfile(plan, persona)}
+                    plan={variant}
+                    household={household}
+                    simulation={simulation}
+                    grossPremiumAnnual={simulation.totalPremiumAnnual}
+                    subsidyAnnual={subsidyMonthly * 12}
                 />
 
-                {/* NEW: FULL BENEFIT BREAKDOWN */}
+                {/* 2. FULL BENEFIT BREAKDOWN (NEW) */}
                 <div className="mt-8">
                     <h3 className="font-bold text-slate-900 text-lg mb-4 px-2">Detailed Coverage Analysis</h3>
-                    <BenefitsCard
-                        plan={plan}
-                    />
+                    <BenefitsCard plan={variant} />
                 </div>
 
-                {/* 2. STRATEGY FOOTER */}
+                {/* 3. STRATEGY FOOTER */}
                 <div className="mt-8">
+                    {/* Temporarily commented out until StrategyFooter is refactored 
                     <StrategyFooter
-                        plan={plan}
-                        persona={persona}
-                        pivots={pivots}
+                        plan={variant}
+                        persona={household}
+                        pivots={null}
                     />
+                    */}
                 </div>
 
-                {/* --- FIX 2: PEOPLE ALSO ASK INJECTED HERE --- */}
+                {/* 4. PEOPLE ALSO ASK */}
                 <div className="mt-12 border-t border-slate-200 pt-8">
                     <h3 className="font-bold text-slate-400 text-xs uppercase tracking-wider mb-4 text-center">
-                        Common Questions for {persona.meta.category}s
+                        Common Questions for {household.meta.category}s
                     </h3>
                     <PeopleAlsoAsk questions={faqs} />
                 </div>

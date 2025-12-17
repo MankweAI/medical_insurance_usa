@@ -1,20 +1,15 @@
 'use client';
 
-import { Plan } from '@/utils/types';
+import { PlanVariant } from '@/utils/types';
 import { ShieldCheck, FileText } from 'lucide-react';
 import PlanDetails from '@/components/PlanDetails';
 import clsx from 'clsx';
 
-// REMOVED: onVerify prop
-export default function BenefitsCard({ plan }: { plan: Plan }) {
+export default function BenefitsCard({ plan }: { plan: PlanVariant }) {
 
-    // NEW: Handle the logic internally
     const handleVerify = () => {
-        if (plan.urls.provider_directory) {
-            window.open(plan.urls.provider_directory, '_blank');
-        } else {
-            alert('Provider directory not available for this plan.');
-        }
+        // Placeholder until URLs are added to new Schema
+        alert('Provider directory integration coming soon.');
     };
 
     return (
@@ -46,7 +41,7 @@ export default function BenefitsCard({ plan }: { plan: Plan }) {
             {/* Footer CTA */}
             <div className="border-t border-slate-100 bg-slate-50/50 p-4 mt-auto">
                 <button
-                    onClick={handleVerify} // Uses internal handler
+                    onClick={handleVerify}
                     className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-200 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
                 >
                     <ShieldCheck className="w-4 h-4 text-emerald-100" />
