@@ -48,8 +48,8 @@ export default function CompareClient({ plans }: Props) {
     }
 
     // --- DATA MAPPING HELPERS ---
-    const getAnnualCost = (p: Plan) => (p.price || 0) * 12;
-    const getRiskMetric = (p: Plan) => p.procedure_copays?.scope_in_hospital || 0; // Proxy for risk
+    const getAnnualCost = (p: Plan) => (p.financials.premium_gross || 0) * 12;
+    // const getRiskMetric = (p: Plan) => p.procedure_copays?.scope_in_hospital || 0; // Removed
 
     return (
         <main className="min-h-screen bg-slate-50 pb-32">
@@ -76,13 +76,13 @@ export default function CompareClient({ plans }: Props) {
                     <div className="space-y-8">
                         {[planA, planB].map((plan) => {
                             const annual = getAnnualCost(plan);
-                            const savings = plan.savings_annual || 0;
-                            const savingsPct = annual > 0 ? (savings / annual) * 100 : 0;
+                            const savings = 0; // plan.savings_annual || 0;
+                            const savingsPct = 0; // annual > 0 ? (savings / annual) * 100 : 0;
 
                             return (
                                 <div key={plan.id}>
                                     <div className="flex justify-between items-end mb-2">
-                                        <span className="font-black text-slate-900 text-lg">{plan.identity.plan_name}</span>
+                                        <span className="font-black text-slate-900 text-lg">{plan.identity.plan_marketing_name}</span>
                                         <div className="text-right">
                                             <span className="block text-xs font-bold text-slate-400 uppercase">Fixed Cost</span>
                                             <span className="font-bold text-slate-900">R{formatRand(annual)}</span>
@@ -111,7 +111,7 @@ export default function CompareClient({ plans }: Props) {
                                         </div>
                                         <div className="flex items-center gap-1 text-rose-500">
                                             <div className="w-2 h-2 rounded-full bg-rose-500 opacity-50" />
-                                            Risk Limit: R{formatRand(getRiskMetric(plan))}
+                                            Risk Limit: N/A
                                         </div>
                                     </div>
                                 </div>
@@ -143,34 +143,26 @@ export default function CompareClient({ plans }: Props) {
                 <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
                     <div className="grid grid-cols-3 bg-slate-50 border-b border-slate-100 p-4">
                         <div className="col-span-1" />
-                        <div className="col-span-1 text-center font-bold text-xs text-slate-900">{planA.identity?.plan_name}</div>
-                        <div className="col-span-1 text-center font-bold text-xs text-slate-900">{planB.identity?.plan_name}</div>
+                        <div className="col-span-1 text-center font-bold text-xs text-slate-900">{planA.identity?.plan_marketing_name}</div>
+                        <div className="col-span-1 text-center font-bold text-xs text-slate-900">{planB.identity?.plan_marketing_name}</div>
                     </div>
 
                     <div className="divide-y divide-slate-50">
                         <Row
                             label="Hospitals"
-                            valA={planA.network_restriction === 'Any' ? 'Any Private' : planA.network_restriction}
-                            valB={planB.network_restriction === 'Any' ? 'Any Private' : planB.network_restriction}
+                            valA={planA.identity.network_type}
+                            valB={planB.identity.network_type}
                             highlightDiff
                         />
                         <Row
-                            label="Maternity"
-                            valA={`${planA.defined_baskets.maternity.antenatal_consults} Antenatal`}
-                            valB={`${planB.defined_baskets.maternity.antenatal_consults} Antenatal`}
+                            label="Primary Care"
+                            valA={`$${planA.benefits.primary_care.copay_amount} Copay`}
+                            valB={`$${planB.benefits.primary_care.copay_amount} Copay`}
                         />
-                        {activeScenario === 'chronic' && (
-                            <Row
-                                label="Chronic Meds"
-                                valA={planA.identity.plan_type === 'Hospital Plan' ? 'CDL Only' : 'Broad Cover'}
-                                valB={planB.identity.plan_type === 'Hospital Plan' ? 'CDL Only' : 'Broad Cover'}
-                                highlightDiff
-                            />
-                        )}
                         <Row
                             label="Specialists"
-                            valA={`${planA.coverage_rates.specialist_in_hospital}% (In-H)`}
-                            valB={`${planB.coverage_rates.specialist_in_hospital}% (In-H)`}
+                            valA={`$${planA.benefits.specialist.copay_amount} Copay`}
+                            valB={`$${planB.benefits.specialist.copay_amount} Copay`}
                             highlightDiff
                         />
                     </div>
@@ -184,11 +176,11 @@ export default function CompareClient({ plans }: Props) {
                     <div>
                         <h3 className="font-bold text-blue-900 text-sm mb-2">The Virtual Actuary Verdict</h3>
                         <p className="text-xs text-blue-800 leading-relaxed">
-                            Comparing <strong>{planA.identity.plan_name}</strong> and <strong>{planB.identity.plan_name}</strong>.
-                            {planB.price > planA.price ?
-                                ` The ${planB.identity.plan_name} costs R${formatRand(planB.price - planA.price)} more, offering ${planB.network_restriction === 'Any' ? 'unrestricted' : planB.network_restriction} access.`
+                            Comparing <strong>{planA.identity.plan_marketing_name}</strong> and <strong>{planB.identity.plan_marketing_name}</strong>.
+                            {planB.financials.premium_gross > planA.financials.premium_gross ?
+                                ` The ${planB.identity.plan_marketing_name} costs R${formatRand(planB.financials.premium_gross - planA.financials.premium_gross)} more.`
                                 :
-                                ` The ${planB.identity.plan_name} is R${formatRand(planA.price - planB.price)} cheaper.`
+                                ` The ${planB.identity.plan_marketing_name} is R${formatRand(planA.financials.premium_gross - planB.financials.premium_gross)} cheaper.`
                             }
                         </p>
                     </div>

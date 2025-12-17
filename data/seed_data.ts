@@ -14,16 +14,22 @@ export const SEED_PLANS: Plan[] = [
         financials: {
             premium_gross: 640.00,
             deductible_individual: 750.00,
+            deductible_family: 1500.00,
             moop_individual: 2800.00,
+            moop_family: 5600.00,
             hsa_eligible: false,
             csr_variant: true
         },
         benefits: {
-            primary_care_visit: '$10 Copay',
-            specialist_visit: '$40 Copay',
-            generic_drugs: '$5 Copay',
-            specialty_drugs: '20% Co-insurance',
-            emergency_room: '$300 Copay'
+            primary_care: { copay_amount: 10, coinsurance_rate: 0, subject_to_deductible: false },
+            specialist: { copay_amount: 40, coinsurance_rate: 0, subject_to_deductible: false },
+            urgent_care: { copay_amount: 45, coinsurance_rate: 0, subject_to_deductible: false },
+            emergency_room: { copay_amount: 300, coinsurance_rate: 0, subject_to_deductible: true },
+            telehealth: { copay_amount: 0, coinsurance_rate: 0, subject_to_deductible: false },
+            rx_tier_1: { copay_amount: 5, coinsurance_rate: 0, subject_to_deductible: false },
+            rx_tier_2: { copay_amount: 25, coinsurance_rate: 0, subject_to_deductible: true },
+            rx_tier_3: { copay_amount: 75, coinsurance_rate: 0, subject_to_deductible: true },
+            rx_tier_4: { copay_amount: 0, coinsurance_rate: 20, subject_to_deductible: true }
         },
         urls: {
             brochure_pdf: 'https://carrier.com/brochure',
@@ -43,22 +49,24 @@ export const SEED_PLANS: Plan[] = [
         financials: {
             premium_gross: 390.00,
             deductible_individual: 9100.00,
+            deductible_family: 18200.00,
             moop_individual: 9100.00,
+            moop_family: 18200.00,
             hsa_eligible: false,
             csr_variant: false
         },
         benefits: {
-            primary_care_visit: 'No Charge (3 visits/year)',
-            specialist_visit: 'Deductible then $0',
-            generic_drugs: '$3 Copay (Pre-deductible)',
-            specialty_drugs: 'Deductible then $0',
-            emergency_room: 'Deductible then $0'
+            primary_care: { copay_amount: 0, coinsurance_rate: 0, subject_to_deductible: false, limit_text: 'First 3 visits $0' },
+            specialist: { copay_amount: 0, coinsurance_rate: 0, subject_to_deductible: true },
+            urgent_care: { copay_amount: 75, coinsurance_rate: 0, subject_to_deductible: true },
+            emergency_room: { copay_amount: 0, coinsurance_rate: 100, subject_to_deductible: true },
+            telehealth: { copay_amount: 0, coinsurance_rate: 0, subject_to_deductible: false },
+            rx_tier_1: { copay_amount: 3, coinsurance_rate: 0, subject_to_deductible: false },
+            rx_tier_2: { copay_amount: 0, coinsurance_rate: 100, subject_to_deductible: true },
+            rx_tier_3: { copay_amount: 0, coinsurance_rate: 100, subject_to_deductible: true },
+            rx_tier_4: { copay_amount: 0, coinsurance_rate: 100, subject_to_deductible: true }
         },
-        urls: {
-            brochure_pdf: 'https://oscar.com/brochure',
-            formulary_drug_list: 'https://oscar.com/rx',
-            provider_directory: 'https://oscar.com/docs'
-        }
+        urls: { brochure_pdf: '', formulary_drug_list: '', provider_directory: '' }
     },
     {
         id: 'NY-UHC-GOLD',
@@ -72,22 +80,24 @@ export const SEED_PLANS: Plan[] = [
         financials: {
             premium_gross: 820.00,
             deductible_individual: 1500.00,
+            deductible_family: 3000.00,
             moop_individual: 6000.00,
+            moop_family: 12000.00,
             hsa_eligible: false,
             csr_variant: false
         },
         benefits: {
-            primary_care_visit: '$20 Copay',
-            specialist_visit: '$60 Copay',
-            generic_drugs: '$0 Copay',
-            specialty_drugs: '$250 Copay',
-            emergency_room: '$400 Copay'
+            primary_care: { copay_amount: 20, coinsurance_rate: 0, subject_to_deductible: false },
+            specialist: { copay_amount: 60, coinsurance_rate: 0, subject_to_deductible: false },
+            urgent_care: { copay_amount: 50, coinsurance_rate: 0, subject_to_deductible: false },
+            emergency_room: { copay_amount: 400, coinsurance_rate: 0, subject_to_deductible: true },
+            telehealth: { copay_amount: 0, coinsurance_rate: 0, subject_to_deductible: false },
+            rx_tier_1: { copay_amount: 0, coinsurance_rate: 0, subject_to_deductible: false },
+            rx_tier_2: { copay_amount: 50, coinsurance_rate: 0, subject_to_deductible: false },
+            rx_tier_3: { copay_amount: 150, coinsurance_rate: 0, subject_to_deductible: true },
+            rx_tier_4: { copay_amount: 250, coinsurance_rate: 0, subject_to_deductible: true }
         },
-        urls: {
-            brochure_pdf: 'https://uhc.com/brochure',
-            formulary_drug_list: 'https://uhc.com/rx',
-            provider_directory: 'https://uhc.com/docs'
-        }
+        urls: { brochure_pdf: '', formulary_drug_list: '', provider_directory: '' }
     },
     {
         id: 'TX-AETNA-HSA',
@@ -101,22 +111,24 @@ export const SEED_PLANS: Plan[] = [
         financials: {
             premium_gross: 410.00,
             deductible_individual: 7500.00,
+            deductible_family: 15000.00,
             moop_individual: 7500.00,
+            moop_family: 15000.00,
             hsa_eligible: true,
             csr_variant: false
         },
         benefits: {
-            primary_care_visit: 'Deductible then $0',
-            specialist_visit: 'Deductible then $0',
-            generic_drugs: 'Deductible then $0',
-            specialty_drugs: 'Deductible then $0',
-            emergency_room: 'Deductible then $0'
+            primary_care: { copay_amount: 0, coinsurance_rate: 100, subject_to_deductible: true },
+            specialist: { copay_amount: 0, coinsurance_rate: 100, subject_to_deductible: true },
+            urgent_care: { copay_amount: 0, coinsurance_rate: 100, subject_to_deductible: true },
+            emergency_room: { copay_amount: 0, coinsurance_rate: 100, subject_to_deductible: true },
+            telehealth: { copay_amount: 0, coinsurance_rate: 100, subject_to_deductible: true },
+            rx_tier_1: { copay_amount: 0, coinsurance_rate: 100, subject_to_deductible: true },
+            rx_tier_2: { copay_amount: 0, coinsurance_rate: 100, subject_to_deductible: true },
+            rx_tier_3: { copay_amount: 0, coinsurance_rate: 100, subject_to_deductible: true },
+            rx_tier_4: { copay_amount: 0, coinsurance_rate: 100, subject_to_deductible: true }
         },
-        urls: {
-            brochure_pdf: 'https://aetna.com/brochure',
-            formulary_drug_list: 'https://aetna.com/rx',
-            provider_directory: 'https://aetna.com/docs'
-        }
+        urls: { brochure_pdf: '', formulary_drug_list: '', provider_directory: '' }
     },
     {
         id: 'CA-KAISER-PLATINUM',
@@ -130,22 +142,24 @@ export const SEED_PLANS: Plan[] = [
         financials: {
             premium_gross: 1100.00,
             deductible_individual: 0.00,
+            deductible_family: 0.00,
             moop_individual: 1500.00,
+            moop_family: 3000.00,
             hsa_eligible: false,
             csr_variant: false
         },
         benefits: {
-            primary_care_visit: '$10 Copay',
-            specialist_visit: '$20 Copay',
-            generic_drugs: '$5 Copay',
-            specialty_drugs: '10% Co-insurance',
-            emergency_room: '$100 Copay'
+            primary_care: { copay_amount: 10, coinsurance_rate: 0, subject_to_deductible: false },
+            specialist: { copay_amount: 20, coinsurance_rate: 0, subject_to_deductible: false },
+            urgent_care: { copay_amount: 20, coinsurance_rate: 0, subject_to_deductible: false },
+            emergency_room: { copay_amount: 100, coinsurance_rate: 0, subject_to_deductible: false },
+            telehealth: { copay_amount: 0, coinsurance_rate: 0, subject_to_deductible: false },
+            rx_tier_1: { copay_amount: 5, coinsurance_rate: 0, subject_to_deductible: false },
+            rx_tier_2: { copay_amount: 15, coinsurance_rate: 0, subject_to_deductible: false },
+            rx_tier_3: { copay_amount: 30, coinsurance_rate: 0, subject_to_deductible: false },
+            rx_tier_4: { copay_amount: 0, coinsurance_rate: 10, subject_to_deductible: false }
         },
-        urls: {
-            brochure_pdf: 'https://kaiser.com/brochure',
-            formulary_drug_list: 'https://kaiser.com/rx',
-            provider_directory: 'https://kaiser.com/docs'
-        }
+        urls: { brochure_pdf: '', formulary_drug_list: '', provider_directory: '' }
     }
 ];
 
@@ -163,6 +177,12 @@ export const SEED_PERSONAS: Persona[] = [
             household_income: 26000,
             household_size: 1,
             tobacco_user: false
+        },
+        usage_profile: {
+            annual_doctor_visits: 4,
+            annual_specialist_visits: 1,
+            annual_urgent_care: 0,
+            prescriptions: { tier_1_generics: 12, tier_2_preferred: 0, tier_3_non_preferred: 0, tier_4_specialty: 0 }
         },
         subsidy_logic: {
             is_subsidy_eligible: true,
@@ -190,6 +210,12 @@ export const SEED_PERSONAS: Persona[] = [
             household_size: 1,
             tobacco_user: false
         },
+        usage_profile: {
+            annual_doctor_visits: 1,
+            annual_specialist_visits: 0,
+            annual_urgent_care: 0,
+            prescriptions: { tier_1_generics: 0, tier_2_preferred: 0, tier_3_non_preferred: 0, tier_4_specialty: 0 }
+        },
         subsidy_logic: {
             is_subsidy_eligible: true,
             estimated_tax_credit: 150.00,
@@ -215,6 +241,12 @@ export const SEED_PERSONAS: Persona[] = [
             household_income: 180000,
             household_size: 4,
             tobacco_user: false
+        },
+        usage_profile: {
+            annual_doctor_visits: 6,
+            annual_specialist_visits: 2,
+            annual_urgent_care: 1,
+            prescriptions: { tier_1_generics: 4, tier_2_preferred: 0, tier_3_non_preferred: 0, tier_4_specialty: 0 }
         },
         subsidy_logic: {
             is_subsidy_eligible: false,
@@ -242,6 +274,12 @@ export const SEED_PERSONAS: Persona[] = [
             household_size: 2,
             tobacco_user: false
         },
+        usage_profile: {
+            annual_doctor_visits: 4,
+            annual_specialist_visits: 8,
+            annual_urgent_care: 0,
+            prescriptions: { tier_1_generics: 12, tier_2_preferred: 4, tier_3_non_preferred: 0, tier_4_specialty: 0 }
+        },
         subsidy_logic: {
             is_subsidy_eligible: true,
             estimated_tax_credit: 400.00,
@@ -267,6 +305,12 @@ export const SEED_PERSONAS: Persona[] = [
             household_income: 55000,
             household_size: 2,
             tobacco_user: false
+        },
+        usage_profile: {
+            annual_doctor_visits: 12, // Pre-natal
+            annual_specialist_visits: 3,
+            annual_urgent_care: 0,
+            prescriptions: { tier_1_generics: 10, tier_2_preferred: 0, tier_3_non_preferred: 0, tier_4_specialty: 0 }
         },
         subsidy_logic: {
             is_subsidy_eligible: true,

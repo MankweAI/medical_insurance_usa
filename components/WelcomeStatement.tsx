@@ -29,9 +29,9 @@ export default function WelcomeStatement({ persona }: Props) {
             </div>
 
             {/* 2. MARKETING H1 (The "Human Name") */}
-            <h1 className="text-3xl md:text-4xl font-black text-slate-900 leading-[1.1] mb-5 tracking-tight">
+            {/* <h1 className="text-3xl md:text-4xl font-black text-slate-900 leading-[1.1] mb-5 tracking-tight">
                 {persona.meta.marketing_heading}
-            </h1>
+            </h1> */}
 
             {/* 3. DIAGNOSIS CARD */}
             <div className="bg-white/80 backdrop-blur-md p-5 rounded-2xl border border-white/50 shadow-sm max-w-2xl relative overflow-hidden group hover:border-blue-200 transition-colors">
@@ -45,9 +45,9 @@ export default function WelcomeStatement({ persona }: Props) {
                         <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
                             Actuarial Objective
                         </h2>
-                        <p className="text-sm text-slate-600 leading-relaxed font-medium">
+                        {/* <p className="text-sm text-slate-600 leading-relaxed font-medium">
                             {persona.meta.description}
-                        </p>
+                        </p> */}
                     </div>
                 </div>
             </div>

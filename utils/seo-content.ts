@@ -36,7 +36,7 @@ export const ContentGenerator = {
         if (plan.financials.deductible_individual > 5000) {
             terms.push({
                 term: "High Deductible",
-                definition: `You are responsible for the first $${plan.financials.deductible_individual.toLocaleString()} of bills. This keeps your monthly premium low, but you must have savings ready for accidents.`
+                definition: `You are responsible for the first $${plan.financials.deductible_individual.toLocaleString('en-US')} of bills. This keeps your monthly premium low, but you must have savings ready for accidents.`
             });
         } else if (plan.financials.deductible_individual === 0) {
             terms.push({
@@ -58,16 +58,16 @@ export const ContentGenerator = {
         });
 
         // Q2: The "Hidden Cost" (Deductible vs Co-pay)
-        const visitCost = plan.benefits.primary_care_visit.toLowerCase();
-        if (visitCost.includes('deductible')) {
+        if (plan.benefits.primary_care.subject_to_deductible) {
             faqs.push({
                 question: "Do I have to pay the full price to see a doctor?",
                 answer: "Yes, initially. Because this plan charges 'After Deductible' for GP visits, you will pay the full cash rate (approx. $150-$200) until you reach your deductible amount."
             });
         } else {
+            const copay = plan.benefits.primary_care.copay_amount > 0 ? `$${plan.benefits.primary_care.copay_amount}` : '$0';
             faqs.push({
                 question: "How much is a standard doctor's visit?",
-                answer: `You pay a flat fee of ${plan.benefits.primary_care_visit}, even if you haven't met your deductible yet. This is a 'Pre-Deductible' benefit.`
+                answer: `You pay a flat fee of ${copay}, even if you haven't met your deductible yet. This is a 'Pre-Deductible' benefit.`
             });
         }
 
@@ -75,7 +75,7 @@ export const ContentGenerator = {
         if (persona.subsidy_logic.is_subsidy_eligible) {
             faqs.push({
                 question: "Will I have to pay this subsidy back to the IRS?",
-                answer: "Potentially. If your income ends up being higher than the $ " + persona.demographics.household_income.toLocaleString() + " you estimated, you may have to repay some of the tax credit when you file your 2026 tax return."
+                answer: "Potentially. If your income ends up being higher than the $ " + persona.demographics.household_income.toLocaleString('en-US') + " you estimated, you may have to repay some of the tax credit when you file your 2026 tax return."
             });
         }
 

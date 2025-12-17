@@ -2,20 +2,19 @@
 
 import { Plan } from '@/utils/types';
 import {
-    Building2,
     Sparkles,
     CheckCircle2,
     ShieldAlert,
     Wallet,
-    Phone,
-    Activity,
-    Zap,
-    AlertTriangle,
-    ShieldCheck // Added for the new button
+    ShieldCheck, // Added for the new button
+    Stethoscope,
+    Building2,
+    BriefcaseMedical
 } from 'lucide-react';
 import clsx from 'clsx';
 import Image from 'next/image';
 import { useState } from 'react';
+import { formatBenefit } from '@/utils/format';
 
 interface FeedCardProps {
     plan: Plan;
@@ -32,16 +31,11 @@ export default function FeedCard({ plan, onVerify, verdict }: FeedCardProps) {
 
     if (!plan) return null;
 
-    const schemeSlug = plan.identity.scheme_name.toLowerCase().replace(/\s+/g, '-');
+    const schemeSlug = plan.identity.carrier_name.toLowerCase().replace(/\s+/g, '-');
     const logoPath = `/schemes-logo/${schemeSlug}.png`;
     const isWinner = verdict?.tier === 'WINNER';
 
-    const fmt = (val: number) => new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR', maximumFractionDigits: 0 }).format(val);
-    const limits = plan.limits || { oncology: { status: 'Unknown', value: 0 }, casualty: { status: 'Unknown', value: 0 } };
-
-    // --- GAP COVER LOGIC ---
-    const isGapOptional = plan.gap_cover_rating === 'Optional';
-    const isGapMandatory = plan.gap_cover_rating === 'Mandatory';
+    const fmt = (val: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val);
 
     return (
         <div className={clsx(
@@ -59,36 +53,27 @@ export default function FeedCard({ plan, onVerify, verdict }: FeedCardProps) {
                             isWinner ? "bg-emerald-50 border border-emerald-100" : "bg-slate-50 border border-slate-100"
                         )}>
                             {!imgError ? (
-                                <Image src={logoPath} alt={plan.identity.scheme_name} width={32} height={32} className="object-contain" onError={() => setImgError(true)} />
+                                <Image src={logoPath} alt={plan.identity.carrier_name} width={32} height={32} className="object-contain" onError={() => setImgError(true)} />
                             ) : (
-                                <span className="text-slate-900 font-black text-[9px] uppercase">{plan.identity.scheme_name.substring(0, 3)}</span>
+                                <span className="text-slate-900 font-black text-[9px] uppercase">{plan.identity.carrier_name.substring(0, 3)}</span>
                             )}
                         </div>
                         <div className="min-w-0">
                             <div className="flex items-center gap-1.5">
-                                <h2 className="text-sm font-black text-slate-900 leading-none truncate">{plan.identity.plan_name}</h2>
+                                <h2 className="text-sm font-black text-slate-900 leading-none truncate">{plan.identity.plan_marketing_name}</h2>
                                 {isWinner && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />}
                             </div>
-                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{plan.identity.plan_series}</span>
+                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{plan.identity.metal_level} Series</span>
                         </div>
                     </div>
 
                     <div className="text-right">
                         <div className={clsx("text-lg font-black leading-none", isWinner ? "text-emerald-700" : "text-slate-900")} suppressHydrationWarning>
-                            {fmt(plan.price)}
+                            {fmt(plan.financials.premium_gross)}
                         </div>
                         <div className="text-[9px] font-bold text-slate-400 uppercase">per month</div>
                     </div>
                 </div>
-
-                {plan.savings_annual > 0 && (
-                    <div className="flex items-center gap-2 px-2.5 py-1.5 bg-emerald-50 rounded-lg border border-emerald-100 mb-3">
-                        <Wallet className="w-3 h-3 text-emerald-600" />
-                        <span className="text-[10px] font-bold text-emerald-700">
-                            Includes <span suppressHydrationWarning>{fmt(plan.savings_annual)}</span> savings/yr
-                        </span>
-                    </div>
-                )}
             </div>
 
             {/* 2. VERDICT */}
@@ -108,58 +93,22 @@ export default function FeedCard({ plan, onVerify, verdict }: FeedCardProps) {
 
             {/* 3. STATS GRID */}
             <div className="grid grid-cols-2 gap-2 mx-4 mb-3">
-                <StatBox label="Hospital" value={`${plan.coverage_rates.hospital_account}%`} icon={Building2} color="emerald" />
-                <StatBox label="Oncology" value={limits.oncology.status === 'Unlimited' ? 'Unlimited' : limits.oncology.value > 0 ? fmt(limits.oncology.value) : 'PMB Only'} icon={Activity} color="blue" />
-                <StatBox label="Network" value={plan.network_restriction} icon={Wallet} color="slate" />
-                <StatBox label="Casualty"
-                    value={limits.casualty.status === 'No Benefit' ? 'No Benefit' : limits.casualty.value > 0 ? `R${limits.casualty.value}` : 'Savings'}
-                    icon={Zap}
-                    color={limits.casualty.status === 'No Benefit' ? 'rose' : 'slate'}
-                />
+                <StatBox label="Deductible" value={fmt(plan.financials.deductible_individual)} icon={Wallet} color="slate" />
+                <StatBox label="Max Packet" value={fmt(plan.financials.moop_individual)} icon={Building2} color="slate" />
+                <StatBox label="Primary Care" value={formatBenefit(plan.benefits.primary_care).replace(' Copay', '').replace(' Co-insurance', '%')} icon={Stethoscope} color="blue" />
+                <StatBox label="Network" value={plan.identity.network_type} icon={BriefcaseMedical} color="emerald" />
             </div>
 
-            {/* 4. GAP COVER (The New Home - With Logic) */}
-            <div className="mx-4 mb-3">
-                <div className={clsx("p-3 rounded-xl border flex items-start gap-3 transition-colors",
-                    isGapMandatory ? "bg-rose-50 border-rose-100" :
-                        isGapOptional ? "bg-emerald-50 border-emerald-100" :
-                            "bg-blue-50 border-blue-100"
-                )}>
-                    {/* Icon Logic */}
-                    <div className={clsx("p-1.5 rounded-full shrink-0 mt-0.5",
-                        isGapMandatory ? "bg-rose-100 text-rose-600" :
-                            isGapOptional ? "bg-emerald-100 text-emerald-600" :
-                                "bg-blue-100 text-blue-600"
-                    )}>
-                        {isGapOptional ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertTriangle className="w-3.5 h-3.5" />}
-                    </div>
-
-                    <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                            <span className={clsx("text-[10px] font-bold uppercase tracking-wider",
-                                isGapMandatory ? "text-rose-700" :
-                                    isGapOptional ? "text-emerald-700" :
-                                        "text-blue-700"
-                            )}>
-                                Gap Cover: {plan.gap_cover_rating}
-                            </span>
-                        </div>
-                        <p className={clsx("text-[10px] leading-snug mt-1 opacity-90",
-                            isGapMandatory ? "text-rose-800" :
-                                isGapOptional ? "text-emerald-800" :
-                                    "text-blue-800"
-                        )}>
-                            {isGapMandatory ? "Plan pays 100%. Specialists charge up to 300%." :
-                                isGapOptional ? "Plan covers up to 200%+. Low shortfall risk." :
-                                    "Recommended to cover co-payments and sub-limits."}
-                        </p>
-                    </div>
-                </div>
+            {/* 4. KEY BENEFITS PREVIEW */}
+            <div className="mx-4 mb-3 space-y-2">
+                <MiniRow label="Specialist" value={plan.benefits.specialist} />
+                <MiniRow label="Generic Rx" value={plan.benefits.rx_tier_1} />
             </div>
+
 
             {/* 5. WARNING */}
             {verdict?.warning && (
-                <div className="mx-4 mb-auto">
+                <div className="mx-4 mb-auto pt-2">
                     <div className="p-2.5 bg-amber-50/80 border border-amber-100 rounded-xl flex gap-2 items-start">
                         <ShieldAlert className="w-3.5 h-3.5 text-amber-600 mt-0.5 shrink-0" />
                         <div className="min-w-0">
@@ -171,7 +120,7 @@ export default function FeedCard({ plan, onVerify, verdict }: FeedCardProps) {
             )}
 
             {/* 6. FOOTER - REDESIGNED BUTTON */}
-            <div className="p-4 mt-2 border-t border-slate-100/50">
+            <div className="p-4 mt-auto border-t border-slate-100/50">
                 <button
                     onClick={onVerify}
                     className={clsx(
@@ -204,6 +153,16 @@ function StatBox({ label, value, icon: Icon, color }: { label: string, value: st
                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{label}</span>
             </div>
             <span className="text-xs font-bold text-slate-900 truncate">{value}</span>
+        </div>
+    );
+}
+
+function MiniRow({ label, value }: { label: string, value: any }) {
+    const text = formatBenefit(value);
+    return (
+        <div className="flex justify-between items-center px-2">
+            <span className="text-[10px] font-bold text-slate-400 uppercase">{label}</span>
+            <span className="text-[10px] font-bold text-slate-700">{text}</span>
         </div>
     );
 }

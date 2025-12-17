@@ -1,5 +1,6 @@
 import { Plan } from '@/utils/types';
 import { Persona } from '@/utils/persona';
+import { formatBenefit } from '@/utils/format';
 
 interface SinglePlanHeroProps {
     plan: Plan;
@@ -57,7 +58,7 @@ export default function SinglePlanHero({ plan, persona, financials }: SinglePlan
                 </div>
 
                 <p className="text-sm text-slate-400 mt-2">
-                    Estimated annual cost of care: <span className="font-semibold text-slate-600">${financials.totalEstimatedCost.toLocaleString()}</span>
+                    Estimated annual cost of care: <span className="font-semibold text-slate-600">${financials.totalEstimatedCost.toLocaleString('en-US')}</span>
                 </p>
             </div>
 
@@ -65,12 +66,12 @@ export default function SinglePlanHero({ plan, persona, financials }: SinglePlan
             <div className="grid grid-cols-2 divide-x divide-slate-100 border-t border-slate-100">
                 <div className="p-4 text-center">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Deductible</p>
-                    <p className="text-2xl font-bold text-slate-900 mt-1">${plan.financials.deductible_individual.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-slate-900 mt-1">${plan.financials.deductible_individual.toLocaleString('en-US')}</p>
                     <p className="text-[10px] text-slate-400 mt-1 px-4 leading-tight">You pay this amount before insurance kicks in.</p>
                 </div>
                 <div className="p-4 text-center">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Max Out-of-Pocket</p>
-                    <p className="text-2xl font-bold text-blue-600 mt-1">${plan.financials.moop_individual.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-blue-600 mt-1">${plan.financials.moop_individual.toLocaleString('en-US')}</p>
                     <p className="text-[10px] text-slate-400 mt-1 px-4 leading-tight">The absolute most you will pay in a year.</p>
                 </div>
             </div>
@@ -79,9 +80,9 @@ export default function SinglePlanHero({ plan, persona, financials }: SinglePlan
             <div className="px-6 py-6 bg-white border-t border-slate-100">
                 <h4 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wide">Key Benefits</h4>
                 <div className="space-y-3">
-                    <BenefitRow label="Doctor Visit" value={plan.benefits.primary_care_visit} />
-                    <BenefitRow label="Specialist" value={plan.benefits.specialist_visit} />
-                    <BenefitRow label="Generic Meds" value={plan.benefits.generic_drugs} />
+                    <BenefitRow label="Doctor Visit" value={plan.benefits.primary_care} />
+                    <BenefitRow label="Specialist" value={plan.benefits.specialist} />
+                    <BenefitRow label="Generic Meds" value={plan.benefits.rx_tier_1} />
                     <BenefitRow label="Emergency Room" value={plan.benefits.emergency_room} />
                 </div>
             </div>
@@ -102,13 +103,15 @@ export default function SinglePlanHero({ plan, persona, financials }: SinglePlan
 }
 
 // Simple Helper Component
-function BenefitRow({ label, value }: { label: string, value: string }) {
-    const isFree = value.toLowerCase().includes('0') || value.toLowerCase().includes('free') || value.toLowerCase().includes('no charge');
+function BenefitRow({ label, value }: { label: string, value: any }) {
+    const formatted = typeof value === 'object' ? formatBenefit(value) : value;
+    const isFree = formatted.toLowerCase().includes('$0') || formatted.toLowerCase().includes('free') || formatted.toLowerCase().includes('no charge');
+
     return (
         <div className="flex justify-between items-center text-sm">
             <span className="text-slate-500">{label}</span>
             <span className={`font-semibold ${isFree ? 'text-green-600' : 'text-slate-900'}`}>
-                {value}
+                {formatted}
             </span>
         </div>
     );

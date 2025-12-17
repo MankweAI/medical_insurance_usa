@@ -25,7 +25,7 @@ export default function ChatWidget({ contextPlan, onClose, onVerify, financialCo
         {
             id: 'welcome',
             role: 'assistant',
-            content: `Hello! I have the 2026 financial rules loaded for **${contextPlan.identity.plan_name}**. \n\nI can calculate costs, savings, and co-pays. For clinical advice, I'll connect you with an expert.`
+            content: `Hello! I have the 2026 financial rules loaded for **${contextPlan.identity.plan_marketing_name}**. \n\nI can calculate costs, savings, and co-pays. For clinical advice, I'll connect you with an expert.`
         }
     ]);
     const [isLoading, setIsLoading] = useState(false);

@@ -104,7 +104,7 @@ export default function MagicSearch({ onAnalyze }: Props) {
                                     className="text-sm font-black text-slate-900 font-mono"
                                     suppressHydrationWarning
                                 >
-                                    R{income.toLocaleString()}
+                                    R{income.toLocaleString('en-US')}
                                 </span>
                             </div>
                             <input
