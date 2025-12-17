@@ -13,6 +13,7 @@ import SinglePlanHero from '@/components/SinglePlanHero';
 import StrategyFooter from '@/components/StrategyFooter';
 import ControlPanel from '@/components/ControlPanel'; // <--- FIX 1: Added ControlPanel
 import PeopleAlsoAsk from '@/components/PeopleAlsoAsk'; // <--- FIX 2: Added PAA
+import BenefitsCard from '@/components/BenefitsCard';
 
 // DATA & LOGIC
 import { SEED_PERSONAS, SEED_PLANS } from '@/data/seed_data';
@@ -99,6 +100,14 @@ export default async function PersonaPage(props: Props) {
                     plan={plan}
                     financials={PricingEngine.runProfile(plan, persona)}
                 />
+
+                {/* NEW: FULL BENEFIT BREAKDOWN */}
+                <div className="mt-8">
+                    <h3 className="font-bold text-slate-900 text-lg mb-4 px-2">Detailed Coverage Analysis</h3>
+                    <BenefitsCard
+                        plan={plan}
+                    />
+                </div>
 
                 {/* 2. STRATEGY FOOTER */}
                 <div className="mt-8">

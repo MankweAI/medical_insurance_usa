@@ -1,15 +1,25 @@
 'use client';
 
 import { Plan } from '@/utils/types';
-import { ShieldCheck, FileText } from 'lucide-react'; // Swapped Phone for ShieldCheck
+import { ShieldCheck, FileText } from 'lucide-react';
 import PlanDetails from '@/components/PlanDetails';
 import clsx from 'clsx';
 
-export default function BenefitsCard({ plan, onVerify }: { plan: Plan; onVerify: () => void }) {
+// REMOVED: onVerify prop
+export default function BenefitsCard({ plan }: { plan: Plan }) {
+
+    // NEW: Handle the logic internally
+    const handleVerify = () => {
+        if (plan.urls.provider_directory) {
+            window.open(plan.urls.provider_directory, '_blank');
+        } else {
+            alert('Provider directory not available for this plan.');
+        }
+    };
+
     return (
         <div className={clsx(
             "h-full bg-white rounded-3xl overflow-hidden flex flex-col relative w-full transition-all",
-            // EXACT REPLICA of Card 1 "Winner" Style:
             "border border-emerald-200 shadow-xl shadow-emerald-200/60 border-l-4 border-l-emerald-500"
         )}>
             {/* Header */}
@@ -33,10 +43,10 @@ export default function BenefitsCard({ plan, onVerify }: { plan: Plan; onVerify:
                 <PlanDetails plan={plan} />
             </div>
 
-            {/* Footer CTA (Updated to Match Winner Style) */}
+            {/* Footer CTA */}
             <div className="border-t border-slate-100 bg-slate-50/50 p-4 mt-auto">
                 <button
-                    onClick={onVerify}
+                    onClick={handleVerify} // Uses internal handler
                     className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-200 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
                 >
                     <ShieldCheck className="w-4 h-4 text-emerald-100" />
